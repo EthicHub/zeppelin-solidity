@@ -17,6 +17,9 @@ const Token = artifacts.require('ERC20')
 const FixedPoolTokenDistribution = artifacts.require('FixedPoolTokenDistributionStrategy')
 const SimpleToken = artifacts.require('SimpleToken')
 
+const FixedPoolWithDiscountsTokenDistribution = artifacts.require('FixedPoolWithDiscountsTokenDistributionStrategy')
+
+
 contract('CompositeCrowdsale', function ([_, investor, wallet]) {
 
   const RATE = new BigNumber(1000);
@@ -85,6 +88,35 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
       (await this.token.balanceOf(investor)).should.be.bignumber.equal(totalSupply);
     })
 
+
+  });
+
+  describe('Fixed Pool Discounted Distribution', function () {
+
+    beforeEach(async function () {
+      this.startTime = latestTime() + duration.weeks(1);
+      this.endTime = this.startTime + duration.weeks(1);
+      this.afterEndTime = this.endTime + duration.seconds(1);
+
+      const fixedPoolToken = await SimpleToken.new();
+      const totalSupply = await fixedPoolToken.totalSupply();
+
+      this.tokenDistribution = await FixedPoolWithDiscountsTokenDistribution.new(fixedPoolToken.address);
+      await fixedPoolToken.transfer(this.tokenDistribution.address, totalSupply);
+      this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, this.tokenDistribution.address)
+      this.token = Token.at(await this.tokenDistribution.getToken.call());
+    })
+
+    beforeEach(async function () {
+      await increaseTimeTo(this.startTime)
+    })
+
+    it('should define contribution periods and assign discounts', async function () {
+      this.firstPeriodEnd = this.startTime + duration.days(1);
+      const discount = 0.3 //10%
+      this.crowdsale.addContributionPeriod(firstPeriodEnd,discount);
+
+    })
 
   });
 
