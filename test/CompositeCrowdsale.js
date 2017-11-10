@@ -18,7 +18,7 @@ const FixedPoolTokenDistribution = artifacts.require('FixedPoolTokenDistribution
 const SimpleToken = artifacts.require('SimpleToken')
 
 const FixedPoolWithDiscountsTokenDistribution = artifacts.require('FixedPoolWithDiscountsTokenDistributionStrategy')
-
+const ValidDiscountPeriodDistribution = artifacts.require('./helpers/ValidDiscountPeriodDistribution.sol');
 
 contract('CompositeCrowdsale', function ([_, investor, wallet]) {
 
@@ -101,23 +101,24 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
       const fixedPoolToken = await SimpleToken.new();
       const totalSupply = await fixedPoolToken.totalSupply();
 
-      this.tokenDistribution = await FixedPoolWithDiscountsTokenDistribution.new(fixedPoolToken.address);
-      await fixedPoolToken.transfer(this.tokenDistribution.address, totalSupply);
-      this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, this.tokenDistribution.address)
-      this.token = Token.at(await this.tokenDistribution.getToken.call());
+
     })
 
     beforeEach(async function () {
       await increaseTimeTo(this.startTime)
     })
 
-    it('should define contribution periods and assign discounts', async function () {
-      this.firstPeriodEnd = this.startTime + duration.days(1);
-      const discount = 0.3 //10%
-      this.crowdsale.addContributionPeriod(firstPeriodEnd,discount);
-
+    it('should have valid discountPeriods', async function () {
+      this.tokenDistribution = await ValidDiscountPeriodDistribution.new(fixedPoolToken.address);
+      this.token = await initTokenDistribution(distribution);
     })
 
   });
 
 })
+
+async function initTokenDistribution(distribution) {
+  await fixedPoolToken.transfer(distribution.address, totalSupply);
+  this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, this.tokenDistribution.address)
+  return Token.at(await this.tokenDistribution.getToken.call());
+}
