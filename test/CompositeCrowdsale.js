@@ -97,10 +97,7 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
       this.startTime = latestTime() + duration.weeks(1);
       this.endTime = this.startTime + duration.weeks(1);
       this.afterEndTime = this.endTime + duration.seconds(1);
-
-      const fixedPoolToken = await SimpleToken.new();
-      const totalSupply = await fixedPoolToken.totalSupply();
-
+      this.fixedPoolToken = await SimpleToken.new();
 
     })
 
@@ -108,17 +105,19 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
       await increaseTimeTo(this.startTime)
     })
 
-    it('should have valid discountPeriods', async function () {
-      this.tokenDistribution = await ValidDiscountPeriodDistribution.new(fixedPoolToken.address);
-      this.token = await initTokenDistribution(distribution);
+    it.only('should have valid discountPeriods', async function () {
+      console.log(this.fixedPoolToken.address);
+      const tokenDistribution = await ValidDiscountPeriodDistribution.new(this.fixedPoolToken.address);
+      //this.token = await initTokenDistribution(tokenDistribution);
     })
 
   });
 
 })
 
-async function initTokenDistribution(distribution) {
-  await fixedPoolToken.transfer(distribution.address, totalSupply);
+async function initTokenDistribution(distribution,token) {
+  const totalSupply = await token.totalSupply();
+  await token.transfer(distribution.address, totalSupply);
   this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, this.tokenDistribution.address)
   return Token.at(await this.tokenDistribution.getToken.call());
 }

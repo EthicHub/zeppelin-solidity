@@ -4,9 +4,10 @@ import '../../contracts/crowdsale/FixedPoolWithDiscountsTokenDistributionStrateg
 
 contract ValidDiscountPeriodDistribution is FixedPoolWithDiscountsTokenDistributionStrategy {
 
+  event Log(address message); // Event
+
   function ValidDiscountPeriodDistribution(ERC20 _token)
     FixedPoolWithDiscountsTokenDistributionStrategy(_token) {
-
   }
 
   function initIntervals() internal validateIntervals {

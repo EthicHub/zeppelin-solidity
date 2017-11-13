@@ -31,7 +31,6 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
   DiscountInterval[] contributionIntervals;
 
   function FixedPoolWithDiscountsTokenDistributionStrategy(ERC20 _token) {
-    initIntervals();
     token = _token;
   }
 
@@ -41,16 +40,15 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
   // All intervals must have a positive discount (penalizations are not contemplated)
   modifier validateIntervals {
     _;
-    assert(contributionIntervals.length > 0);
+    require(contributionIntervals.length > 0);
     for(uint i = 0; i < contributionIntervals.length; ++i) {
-      DiscountInterval interval = contributionIntervals[i];
-      assert(interval.discount > 0);
+      require(contributionIntervals[i].discount > 0);
       if (i == 0) {
-        assert(crowdsale.startTime() < interval.end);
+        require(crowdsale.startTime() < contributionIntervals[i].end);
       } if (i == contributionIntervals.length) {
-        assert(crowdsale.endTime() == interval.end);
+        require(crowdsale.endTime() == contributionIntervals[i].end);
       } else {
-        assert(contributionIntervals[i-1].end < interval.end);
+        require(contributionIntervals[i-1].end < contributionIntervals[i].end);
       }
     }
   }
@@ -58,6 +56,12 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
   //@dev override to define the intervals
   function initIntervals() internal validateIntervals {
 
+  }
+
+  //@dev overriding to init the time intervals according to crodsale dates
+  function initializeDistribution(CompositeCrowdsale _crowdsale) {
+    super.initializeDistribution(_crowdsale);
+    initIntervals();
   }
 
   function distributeTokens(address _beneficiary, uint256 _amount) onlyCrowdsale {
