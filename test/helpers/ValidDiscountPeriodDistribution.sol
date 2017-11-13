@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import '../../contracts/crowdsale/FixedPoolWithDiscountsTokenDistributionStrategy.sol'
+import '../../contracts/crowdsale/FixedPoolWithDiscountsTokenDistributionStrategy.sol';
 
 contract ValidDiscountPeriodDistribution is FixedPoolWithDiscountsTokenDistributionStrategy {
 
@@ -9,12 +9,10 @@ contract ValidDiscountPeriodDistribution is FixedPoolWithDiscountsTokenDistribut
 
   }
 
-  function initIntervals() validateIntervals {
+  function initIntervals() internal validateIntervals {
     uint256 startTime = crowdsale.startTime();
-    contributionIntervals = [
-      DiscountInterval(startTime + 2 days, 1.3),
-      DiscountInterval(startTime + 4 days, 1.3)
-    ];
+    contributionIntervals.push(DiscountInterval(startTime + 2 days, 30));
+    contributionIntervals.push(DiscountInterval(startTime + 4 days, 20));
   }
 
 }
