@@ -12,7 +12,9 @@ require('chai')
   .should()
 
 const CappedCompositeCrowdsale = artifacts.require('./helpers/CappedCompositeCrowdsaleImpl.sol')
-const MintableToken = artifacts.require('MintableToken')
+// TODO DistributionMock
+const FixedRateTokenDistribution = artifacts.require('FixedRateTokenDistributionStrategy')
+//const MintableToken = artifacts.require('MintableToken')
 
 contract('CappedCompositeCrowdsale', function ([_, wallet]) {
 
@@ -29,16 +31,15 @@ contract('CappedCompositeCrowdsale', function ([_, wallet]) {
   beforeEach(async function () {
     this.startTime = latestTime() + duration.weeks(1);
     this.endTime =   this.startTime + duration.weeks(1);
+    this.tokenDistribution = await FixedRateTokenDistribution.new();
 
-    this.crowdsale = await CappedCompositeCrowdsale.new(this.startTime, this.endTime, rate, wallet, cap)
-
-    this.token = MintableToken.at(await this.crowdsale.token())
+    this.crowdsale = await CappedCompositeCrowdsale.new(this.startTime, this.endTime, rate, wallet, this.tokenDistribution.address, cap)
   })
 
   describe('creating a valid crowdsale', function () {
 
     it('should fail with zero cap', async function () {
-      await CappedCompositeCrowdsale.new(this.startTime, this.endTime, rate, wallet, 0).should.be.rejectedWith(EVMThrow);
+      await CappedCompositeCrowdsale.new(this.startTime, this.endTime, rate, wallet, this.tokenDistribution.address, 0).should.be.rejectedWith(EVMThrow);
     })
 
   });

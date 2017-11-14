@@ -1,8 +1,6 @@
 pragma solidity ^0.4.11;
 
-
 import '../../contracts/crowdsale/CappedCompositeCrowdsale.sol';
-
 
 contract CappedCompositeCrowdsaleImpl is CappedCompositeCrowdsale {
 
@@ -11,9 +9,10 @@ contract CappedCompositeCrowdsaleImpl is CappedCompositeCrowdsale {
     uint256 _endTime,
     uint256 _rate,
     address _wallet,
+    TokenDistributionStrategy _tokenDistribution,
     uint256 _cap
   )
-    Crowdsale(_startTime, _endTime, _rate, _wallet)
+    CompositeCrowdsale(_startTime, _endTime, _rate, _wallet, _tokenDistribution)
     CappedCompositeCrowdsale(_cap)
   {
   }
