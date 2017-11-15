@@ -2,6 +2,7 @@ import ether from './helpers/ether'
 import {advanceBlock} from './helpers/advanceToBlock'
 import {increaseTimeTo, duration} from './helpers/increaseTime'
 import latestTime from './helpers/latestTime'
+import EVMThrow from './helpers/EVMThrow'
 
 const BigNumber = web3.BigNumber
 
@@ -19,6 +20,7 @@ const SimpleToken = artifacts.require('SimpleToken')
 
 const FixedPoolWithDiscountsTokenDistribution = artifacts.require('FixedPoolWithDiscountsTokenDistributionStrategy')
 const ValidDiscountPeriodDistribution = artifacts.require('./helpers/ValidDiscountPeriodDistribution.sol');
+const EmptyIntervalsDistribution = artifacts.require('./helpers/EmptyIntervalsDistribution.sol');
 
 contract('CompositeCrowdsale', function ([_, investor, wallet]) {
 
@@ -96,7 +98,7 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
     beforeEach(async function () {
       this.startTime = latestTime() + duration.weeks(1);
       this.endTime = this.startTime + duration.weeks(1);
-      this.afterEndTime = this.endTime + duration.seconds(1);
+    //  this.afterEndTime = this.endTime + duration.seconds(1);
       this.fixedPoolToken = await SimpleToken.new();
 
     })
@@ -105,19 +107,18 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
       await increaseTimeTo(this.startTime)
     })
 
-    it.only('should have valid discountPeriods', async function () {
-      console.log(this.fixedPoolToken.address);
+    it('should have valid discountPeriods', async function () {
       const tokenDistribution = await ValidDiscountPeriodDistribution.new(this.fixedPoolToken.address);
-      //this.token = await initTokenDistribution(tokenDistribution);
+      //const totalSupply = await this.fixedPoolToken.totalSupply();
+      this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, tokenDistribution.address);
+    })
+
+    it('should fail if discount period not intialized', async function () {
+      const tokenDistribution = await EmptyIntervalsDistribution.new(this.fixedPoolToken.address);
+      //const totalSupply = await this.fixedPoolToken.totalSupply();
+      await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, tokenDistribution.address).should.be.rejectedWith(EVMThrow);
     })
 
   });
 
 })
-
-async function initTokenDistribution(distribution,token) {
-  const totalSupply = await token.totalSupply();
-  await token.transfer(distribution.address, totalSupply);
-  this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, this.tokenDistribution.address)
-  return Token.at(await this.tokenDistribution.getToken.call());
-}

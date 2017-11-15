@@ -14,7 +14,6 @@ import '../math/SafeMath.sol';
  */
 contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStrategy {
   using SafeMath for uint256;
-
   // The token being sold
   ERC20 token;
 
@@ -30,6 +29,8 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
 
   DiscountInterval[] contributionIntervals;
 
+  event Log(uint message);
+
   function FixedPoolWithDiscountsTokenDistributionStrategy(ERC20 _token) {
     token = _token;
   }
@@ -40,13 +41,13 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
   // All intervals must have a positive discount (penalizations are not contemplated)
   modifier validateIntervals {
     _;
-    require(contributionIntervals.length > 0);
+    //require(contributionIntervals.length > 0);
     for(uint i = 0; i < contributionIntervals.length; ++i) {
       require(contributionIntervals[i].discount > 0);
       if (i == 0) {
         require(crowdsale.startTime() < contributionIntervals[i].end);
-      } if (i == contributionIntervals.length) {
-        require(crowdsale.endTime() == contributionIntervals[i].end);
+      /*} if (i == contributionIntervals.length) {
+        require(crowdsale.endTime() == contributionIntervals[i].end);*/
       } else {
         require(contributionIntervals[i-1].end < contributionIntervals[i].end);
       }
@@ -54,9 +55,7 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
   }
 
   //@dev override to define the intervals
-  function initIntervals() internal validateIntervals {
-
-  }
+  function initIntervals() internal validateIntervals {}
 
   //@dev overriding to init the time intervals according to crodsale dates
   function initializeDistribution(CompositeCrowdsale _crowdsale) {
@@ -65,14 +64,18 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
   }
 
   function distributeTokens(address _beneficiary, uint256 _amount) onlyCrowdsale {
-
+    //FIXME remove this
+    uint notAbstractJustForTest = 0;
   }
 
   function compensate(address _beneficiary) {
-
+    //FIXME remove this
+    uint notAbstractJustForTest = 0;
   }
 
   function getToken() constant returns(ERC20) {
     return token;
   }
+
+
 }
