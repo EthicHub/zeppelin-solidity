@@ -52,12 +52,13 @@ contract CompositeCrowdsale {
     require(_rate > 0);
     require(_wallet != 0x0);
 
-    tokenDistribution = _tokenDistribution;
-    tokenDistribution.initializeDistribution(this);
-
     startTime = _startTime;
     endTime = _endTime;
     rate = _rate;
+
+    tokenDistribution = _tokenDistribution;
+    tokenDistribution.initializeDistribution(this);
+
     wallet = _wallet;
   }
 

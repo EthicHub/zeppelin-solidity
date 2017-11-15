@@ -4,6 +4,7 @@ import '../../contracts/crowdsale/FixedPoolWithDiscountsTokenDistributionStrateg
 
 contract ValidDiscountPeriodDistribution is FixedPoolWithDiscountsTokenDistributionStrategy {
 
+  event Test(uint256 message);
 
   function ValidDiscountPeriodDistribution(ERC20 _token)
     FixedPoolWithDiscountsTokenDistributionStrategy(_token) {
@@ -11,8 +12,11 @@ contract ValidDiscountPeriodDistribution is FixedPoolWithDiscountsTokenDistribut
   }
   //@dev set periods for tests
   function initIntervals() internal validateIntervals {
-    uint256 startTime = crowdsale.startTime();
+    uint256 startTime = 1510752626;
+    Test(startTime);
     contributionIntervals.push(DiscountInterval(startTime + 2 days, 30));
+    Test(contributionIntervals.length);
+
     //contributionIntervals.push(DiscountInterval(startTime + 4 days, 20));
   }
 
