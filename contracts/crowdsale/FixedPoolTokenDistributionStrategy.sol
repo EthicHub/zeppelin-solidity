@@ -38,4 +38,8 @@ contract FixedPoolTokenDistributionStrategy is TokenDistributionStrategy {
   function getToken() constant returns(ERC20) {
     return token;
   }
+
+  function calculateTokenAmount(uint weiAmount,uint rate) constant returns(uint tokens) {
+    return weiAmount.mul(rate);
+  }
 }

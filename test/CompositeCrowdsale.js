@@ -18,9 +18,7 @@ const Token = artifacts.require('ERC20')
 const FixedPoolTokenDistribution = artifacts.require('FixedPoolTokenDistributionStrategy')
 const SimpleToken = artifacts.require('SimpleToken')
 
-const FixedPoolWithDiscountsTokenDistribution = artifacts.require('FixedPoolWithDiscountsTokenDistributionStrategy')
-const ValidDiscountPeriodDistribution = artifacts.require('./helpers/ValidDiscountPeriodDistribution.sol');
-const EmptyIntervalsDistribution = artifacts.require('./helpers/EmptyIntervalsDistribution.sol');
+const ConfigurableFixedPoolDiscountsDistribution = artifacts.require('./helpers/ConfigurableFixedPoolDiscountsDistribution.sol');
 
 contract('CompositeCrowdsale', function ([_, investor, wallet]) {
 
@@ -88,37 +86,12 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
       await this.tokenDistribution.compensate(investor).should.be.fulfilled;
       const totalSupply = await this.token.totalSupply();
       (await this.token.balanceOf(investor)).should.be.bignumber.equal(totalSupply);
+
     })
 
 
   });
 
-  describe('Fixed Pool Discounted Distribution', function () {
 
-    beforeEach(async function () {
-      this.startTime = latestTime() + duration.weeks(1);
-      this.endTime = this.startTime + duration.weeks(1);
-    //  this.afterEndTime = this.endTime + duration.seconds(1);
-      this.fixedPoolToken = await SimpleToken.new();
-
-    })
-
-    beforeEach(async function () {
-      await increaseTimeTo(this.startTime)
-    })
-
-    it('should have valid discountPeriods', async function () {
-      const tokenDistribution = await ValidDiscountPeriodDistribution.new(this.fixedPoolToken.address);
-      //const totalSupply = await this.fixedPoolToken.totalSupply();
-      this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, tokenDistribution.address);
-    })
-
-    it('should fail if discount period not intialized', async function () {
-      const tokenDistribution = await EmptyIntervalsDistribution.new(this.fixedPoolToken.address);
-      //const totalSupply = await this.fixedPoolToken.totalSupply();
-      await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, tokenDistribution.address).should.be.rejectedWith(EVMThrow);
-    })
-
-  });
 
 })
