@@ -12,14 +12,14 @@ import '../math/SafeMath.sol';
  * After the crowdsale has ended the contract compensate buyers proportionally to their contributions.
  */
 contract FixedPoolTokenDistributionStrategy is TokenDistributionStrategy {
-  using SafeMath for uint256;
 
   // The token being sold
   ERC20 token;
   mapping(address => uint256) contributions;
   uint256 totalContributed;
 
-  function FixedPoolTokenDistributionStrategy(ERC20 _token) {
+  function FixedPoolTokenDistributionStrategy(ERC20 _token, uint256 _rate)
+    TokenDistributionStrategy(_rate){
     token = _token;
   }
 

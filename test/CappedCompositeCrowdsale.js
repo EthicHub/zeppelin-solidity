@@ -31,7 +31,7 @@ contract('CappedCompositeCrowdsale', function ([_, wallet]) {
   beforeEach(async function () {
     this.startTime = latestTime() + duration.weeks(1);
     this.endTime =   this.startTime + duration.weeks(1);
-    this.tokenDistribution = await FixedRateTokenDistribution.new();
+    this.tokenDistribution = await FixedRateTokenDistribution.new(rate);
 
     this.crowdsale = await CappedCompositeCrowdsale.new(this.startTime, this.endTime, rate, wallet, this.tokenDistribution.address, cap)
   })

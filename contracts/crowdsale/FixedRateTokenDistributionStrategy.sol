@@ -15,6 +15,10 @@ contract FixedRateTokenDistributionStrategy is TokenDistributionStrategy {
   // The token being sold
   MintableToken token;
 
+  function FixedRateTokenDistributionStrategy(uint256 _rate) TokenDistributionStrategy(_rate){
+
+  }
+  
   function initializeDistribution(CompositeCrowdsale _crowdsale) {
     super.initializeDistribution(_crowdsale);
     token = new MintableToken();

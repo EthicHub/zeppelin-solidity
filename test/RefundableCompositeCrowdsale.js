@@ -30,7 +30,7 @@ contract('RefundableCompositeCrowdsale', function ([_, owner, wallet, investor])
     this.startTime = latestTime() + duration.weeks(1)
     this.endTime =   this.startTime + duration.weeks(1)
     this.afterEndTime = this.endTime + duration.seconds(1)
-    this.tokenDistribution = await FixedRateTokenDistribution.new();
+    this.tokenDistribution = await FixedRateTokenDistribution.new(rate);
 
     this.crowdsale = await RefundableCompositeCrowdsale.new(this.startTime, this.endTime, rate, wallet, this.tokenDistribution.address, goal, {from: owner})
   })
