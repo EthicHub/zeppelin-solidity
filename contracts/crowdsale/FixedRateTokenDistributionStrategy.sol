@@ -18,7 +18,7 @@ contract FixedRateTokenDistributionStrategy is TokenDistributionStrategy {
   function FixedRateTokenDistributionStrategy(uint256 _rate) TokenDistributionStrategy(_rate){
 
   }
-  
+
   function initializeDistribution(CompositeCrowdsale _crowdsale) {
     super.initializeDistribution(_crowdsale);
     token = new MintableToken();
@@ -31,4 +31,9 @@ contract FixedRateTokenDistributionStrategy is TokenDistributionStrategy {
   function getToken() constant returns(ERC20) {
     return token;
   }
+
+  function calculateTokenAmount(uint256 weiAmount) constant returns (uint256 amount) {
+    return weiAmount.mul(rate);
+  }
+
 }
