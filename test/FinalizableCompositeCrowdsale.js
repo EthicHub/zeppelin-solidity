@@ -30,7 +30,7 @@ contract('FinalizableCompositeCrowdsale', function ([_, owner, wallet, thirdpart
     this.tokenDistribution = await FixedRateTokenDistribution.new(rate);
 
 
-    this.crowdsale = await FinalizableCompositeCrowdsale.new(this.startTime, this.endTime, rate, wallet, this.tokenDistribution.address, {from: owner})
+    this.crowdsale = await FinalizableCompositeCrowdsale.new(this.startTime, this.endTime, wallet, this.tokenDistribution.address, {from: owner})
   })
 
   it('cannot be finalized before ending', async function () {

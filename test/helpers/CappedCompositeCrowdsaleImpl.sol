@@ -7,12 +7,11 @@ contract CappedCompositeCrowdsaleImpl is CappedCompositeCrowdsale {
   function CappedCompositeCrowdsaleImpl (
     uint256 _startTime,
     uint256 _endTime,
-    uint256 _rate,
     address _wallet,
     TokenDistributionStrategy _tokenDistribution,
     uint256 _cap
   )
-    CompositeCrowdsale(_startTime, _endTime, _rate, _wallet, _tokenDistribution)
+    CompositeCrowdsale(_startTime, _endTime, _wallet, _tokenDistribution)
     CappedCompositeCrowdsale(_cap)
   {
   }

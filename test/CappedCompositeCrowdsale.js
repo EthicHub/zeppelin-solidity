@@ -33,13 +33,13 @@ contract('CappedCompositeCrowdsale', function ([_, wallet]) {
     this.endTime =   this.startTime + duration.weeks(1);
     this.tokenDistribution = await FixedRateTokenDistribution.new(rate);
 
-    this.crowdsale = await CappedCompositeCrowdsale.new(this.startTime, this.endTime, rate, wallet, this.tokenDistribution.address, cap)
+    this.crowdsale = await CappedCompositeCrowdsale.new(this.startTime, this.endTime, wallet, this.tokenDistribution.address, cap)
   })
 
   describe('creating a valid crowdsale', function () {
 
     it('should fail with zero cap', async function () {
-      await CappedCompositeCrowdsale.new(this.startTime, this.endTime, rate, wallet, this.tokenDistribution.address, 0).should.be.rejectedWith(EVMThrow);
+      await CappedCompositeCrowdsale.new(this.startTime, this.endTime, wallet, this.tokenDistribution.address, 0).should.be.rejectedWith(EVMThrow);
     })
 
   });

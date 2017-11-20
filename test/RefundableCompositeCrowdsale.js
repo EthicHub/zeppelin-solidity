@@ -32,13 +32,13 @@ contract('RefundableCompositeCrowdsale', function ([_, owner, wallet, investor])
     this.afterEndTime = this.endTime + duration.seconds(1)
     this.tokenDistribution = await FixedRateTokenDistribution.new(rate);
 
-    this.crowdsale = await RefundableCompositeCrowdsale.new(this.startTime, this.endTime, rate, wallet, this.tokenDistribution.address, goal, {from: owner})
+    this.crowdsale = await RefundableCompositeCrowdsale.new(this.startTime, this.endTime, wallet, this.tokenDistribution.address, goal, {from: owner})
   })
 
   describe('creating a valid crowdsale', function () {
 
     it('should fail with zero goal', async function () {
-      await RefundableCompositeCrowdsale.new(this.startTime, this.endTime, rate, wallet, this.tokenDistribution.address, 0, {from: owner}).should.be.rejectedWith(EVMThrow);
+      await RefundableCompositeCrowdsale.new(this.startTime, this.endTime, wallet, this.tokenDistribution.address, 0, {from: owner}).should.be.rejectedWith(EVMThrow);
     })
 
   });
