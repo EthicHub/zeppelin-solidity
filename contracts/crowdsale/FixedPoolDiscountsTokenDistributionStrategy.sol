@@ -15,39 +15,67 @@ import '../math/SafeMath.sol';
  */
 contract FixedPoolDiscountsTokenDistributionStrategy is TokenDistributionStrategy {
   using SafeMath for uint256;
+  //event Log
+  event Log(uint256 message);
+  event LogString(string message);
 
   // Definition of the interval when the discount is applicable
-  DiscountInterval[] intervals;
   struct DiscountInterval {
     //end timestamp
-    uint256 endTime;
+    uint256 endPeriod;
     // percentage
     uint256 discount;
   }
+  DiscountInterval[] discountIntervals;
 
   // The token being sold
   ERC20 token;
   mapping(address => uint256) contributions;
   uint256 totalContributed;
-  //mapping(uint256 => DiscountInterval) intervals;
+  //mapping(uint256 => DiscountInterval) discountIntervals;
 
   function FixedPoolDiscountsTokenDistributionStrategy(ERC20 _token) {
     token = _token;
   }
 
+  // First period will go from crowdsale.start_date to discountIntervals[0].end
+  // Next intervals have to end after the previous ones
+  // Last interval must end when the crowdsale ends
+  // All intervals must have a positive discount (penalizations are not contemplated)
+  modifier validateIntervals {
+    _;
+    require(discountIntervals.length > 0);
+    for(uint i = 0; i < discountIntervals.length; ++i) {
+      require(discountIntervals[i].discount > 0);
+      if (i == 0) {
+        require(crowdsale.startTime() < discountIntervals[i].endPeriod);
+      } else {
+        require(discountIntervals[i-1].endPeriod < discountIntervals[i].endPeriod);
+        require(discountIntervals[i].endPeriod <= crowdsale.endTime());
+      }
+    }
+  }
+
+  //Define intervals
+  function initIntervals() validateIntervals {
+    require (discountIntervals.length == 0);
+    uint256 startTime = crowdsale.startTime();
+    discountIntervals.push(DiscountInterval(startTime + 1 weeks,30));
+    discountIntervals.push(DiscountInterval(startTime + 3 weeks,20));
+    discountIntervals.push(DiscountInterval(startTime + 5 weeks,10));
+  }
+
   function calculateTokenAmount(uint256 _weiAmount, uint256 _rate) constant returns (uint256 tokens) {
+    // Initialize intervals
+    initIntervals();
     // calculate discount in function of the time
-    uint startTime = crowdsale.startTime();
-    intervals.push(DiscountInterval(startTime + 1 weeks,30));
-    intervals.push(DiscountInterval(startTime + 3 weeks,20));
-    intervals.push(DiscountInterval(startTime + 5 weeks,10));
-    for (uint i = 0; i < intervals.length; i++) {
-      if (now <= intervals[i].endTime) {
+    for (uint i = 0; i < discountIntervals.length; i++) {
+      if (now <= discountIntervals[i].endPeriod) {
         // calculate token amount to be created
         tokens = _weiAmount.mul(_rate);
-        // OP : tokens + (tokens * intervals[i].discount / 100)
-        uint256 discount = intervals[i].discount;
-        return tokens.add(tokens.mul(discount.div(100)));
+        // OP : tokens + ((tokens * discountIntervals[i].discount) / 100)
+        // BE CAREFULLY with decimals
+        return tokens.add(tokens.mul(discountIntervals[i].discount).div(100));
       }
     }
   }
