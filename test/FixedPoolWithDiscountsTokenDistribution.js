@@ -2,6 +2,7 @@ import ether from './helpers/ether'
 import {advanceBlock} from './helpers/advanceToBlock'
 import {increaseTimeTo, duration} from './helpers/increaseTime'
 import latestTime from './helpers/latestTime'
+import EVMThrow from './helpers/EVMThrow'
 
 const BigNumber = web3.BigNumber
 
@@ -11,10 +12,7 @@ const should = require('chai')
   .should()
 
 const CompositeCrowdsale = artifacts.require('CompositeCrowdsale')
-const FixedPoolTokenDistribution = artifacts.require('FixedPoolTokenDistributionStrategy')
-//const FixedPoolWithDiscountsTokenDistribution = artifacts.require('FixedPoolDiscountsTokenDistributionStrategy')
 const FixedPoolWithDiscountsTokenDistribution = artifacts.require('./helpers/FixedPoolWithDiscountsTokenDistributionMock');
-//const FixedPoolWithDiscountsTokenDistribution = artifacts.require('FixedPoolWithDiscountsTokenDistributionStrategy')
 const Token = artifacts.require('ERC20')
 
 const SimpleToken = artifacts.require('SimpleToken')
@@ -22,95 +20,66 @@ const SimpleToken = artifacts.require('SimpleToken')
 contract('CompositeCrowdsale', function ([_, investor, wallet]) {
 
   const RATE = new BigNumber(4000);
+  const numIntervals = 3;
+  const percentageDiscount = 10;
 
   before(async function() {
     //Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
     await advanceBlock();
   })
 
-  describe('Fixed Discounts Pool Distribution', function () {
+
+  beforeEach(async function () {
+    this.startTime = latestTime() + duration.weeks(1);
+    this.endTime = this.startTime + duration.weeks(8);
+
+    const fixedPoolToken = await SimpleToken.new();
+    const totalSupply = await fixedPoolToken.totalSupply();
+    this.tokenDistribution = await FixedPoolWithDiscountsTokenDistribution.new(fixedPoolToken.address);
+    this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, this.tokenDistribution.address)
+
+    await fixedPoolToken.transfer(this.tokenDistribution.address, totalSupply);
+    this.token = Token.at(await this.tokenDistribution.getToken.call());
+
+  })
+
+  describe('creating a valid crowdsale', function () {
 
     beforeEach(async function () {
-      this.startTime = latestTime() + duration.weeks(1);
-      console.log("*** Start Time: " + this.startTime);
-      this.endTime = this.startTime + duration.weeks(5);
-      console.log("*** End Time: " + this.endTime);
-      this.afterEndTime = this.endTime + duration.seconds(1);
-      console.log("*** After End Time: " + this.afterEndTime);
-
-      const fixedPoolToken = await SimpleToken.new();
-      const totalSupply = await fixedPoolToken.totalSupply();
-      this.tokenDistribution = await FixedPoolWithDiscountsTokenDistribution.new(fixedPoolToken.address);
-      this.tokenDistribution.addInterval(this.startTime + duration.weeks(1), 30);
-      this.tokenDistribution.addInterval(this.startTime + duration.weeks(3), 20);
-      this.tokenDistribution.addInterval(this.startTime + duration.weeks(5), 10);
-      this.tokenDistribution.initIntervals();
-      console.log(await this.tokenDistribution.getIntervals());
-      //await tokenDistribution.initIntervals();
-
-      await fixedPoolToken.transfer(this.tokenDistribution.address, totalSupply);
-      this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, this.tokenDistribution.address)
-      this.token = Token.at(await this.tokenDistribution.getToken.call());
+      await increaseTimeTo(this.startTime);
     })
 
-    it('should calculate tokens after first period', async function () {
-      await increaseTimeTo(this.startTime)
-      const investmentAmount = ether(0.000000000000000001);
-      console.log("*** Amount: " + investmentAmount);
-      let tokens = await this.tokenDistribution.calculateTokenAmount(investmentAmount, RATE).should.be.fulfilled;
-      console.log("*** COMPOSITION Tokens: " + tokens);
-      let tx = await this.crowdsale.buyTokens(investor, {value: investmentAmount, from: investor}).should.be.fulfilled;
-      console.log("*** COMPOSITION FIXED POOL: " + tx.receipt.gasUsed + " gas used.");
+    it('should fail with zero cap', async function () {
+      await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, 0).should.be.rejectedWith(EVMThrow);
     })
 
-    it('should calculate tokens after second period', async function () {
-      await increaseTimeTo(this.startTime + duration.weeks(2))
-      const investmentAmount = ether(0.000000000000000001);
-      console.log("*** Amount: " + investmentAmount);
-      let tokens = await this.tokenDistribution.calculateTokenAmount(investmentAmount, RATE).should.be.fulfilled;
-      console.log("*** COMPOSITION Tokens: " + tokens);
-      let tx = await this.crowdsale.buyTokens(investor, {value: investmentAmount, from: investor}).should.be.fulfilled;
-      console.log("*** COMPOSITION FIXED POOL: " + tx.receipt.gasUsed + " gas used.");
-    })
-
-    it('should calculate tokens after thrid period', async function () {
-      await increaseTimeTo(this.startTime + duration.weeks(4))
-      const investmentAmount = ether(0.000000000000000001);
-      console.log("*** Amount: " + investmentAmount);
-      let tokens = await this.tokenDistribution.calculateTokenAmount(investmentAmount, RATE).should.be.fulfilled;
-      console.log("*** COMPOSITION Tokens: " + tokens);
-      let tx = await this.crowdsale.buyTokens(investor, {value: investmentAmount, from: investor}).should.be.fulfilled;
-      console.log("*** COMPOSITION FIXED POOL: " + tx.receipt.gasUsed + " gas used.");
-    })
   });
 
-  describe('Fixed Pool Distribution', function () {
+  describe('proving the intervals of the distribution', function () {
 
     beforeEach(async function () {
-      this.startTime = latestTime() + duration.weeks(1);
-      this.endTime = this.startTime + duration.weeks(1);
       this.afterEndTime = this.endTime + duration.seconds(1);
 
-      const fixedPoolToken = await SimpleToken.new();
-      const totalSupply = await fixedPoolToken.totalSupply();
-      this.tokenDistribution = await FixedPoolTokenDistribution.new(fixedPoolToken.address);
-      await fixedPoolToken.transfer(this.tokenDistribution.address, totalSupply);
-      this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, this.tokenDistribution.address)
-      this.token = Token.at(await this.tokenDistribution.getToken.call());
+      for (var i = 0; i <= numIntervals; i++) {
+        this.tokenDistribution.addInterval(this.startTime + duration.weeks(2*i+1), (numIntervals-i)*percentageDiscount);
+      }
+      await this.tokenDistribution.initIntervals();
+      //console.log(await this.tokenDistribution.getIntervals());
+
     })
 
-    beforeEach(async function () {
-      await increaseTimeTo(this.startTime)
-    })
+    it('should calculate tokens', async function () {
 
-    it('should buy tokens and compensate contributors after the sale', async function () {
-      const investmentAmount = ether(0.000000000000000001);
-      console.log("*** Amount: " + investmentAmount);
-      let tokens = await this.tokenDistribution.calculateTokenAmount(investmentAmount, RATE).should.be.fulfilled;
-      console.log("*** COMPOSITION Tokens: " + tokens);
-      let tx = await this.crowdsale.buyTokens(investor, {value: investmentAmount, from: investor}).should.be.fulfilled;
-      console.log("*** COMPOSITION FIXED POOL: " + tx.receipt.gasUsed + " gas used.");
+      for (var i = 0; i <= numIntervals; i++) {
+        await increaseTimeTo(this.startTime + duration.weeks(2*i))
+        const investmentAmount = ether(0.000000000000000001);
+        console.log("*** Amount: " + investmentAmount);
+        let tokens = await this.tokenDistribution.calculateTokenAmount(investmentAmount, RATE).should.be.fulfilled;
+        console.log("*** COMPOSITION Tokens: " + tokens);
+        let tx = await this.crowdsale.buyTokens(investor, {value: investmentAmount, from: investor}).should.be.fulfilled;
+        console.log("*** COMPOSITION FIXED POOL: " + tx.receipt.gasUsed + " gas used.");
 
+      }
       await increaseTimeTo(this.afterEndTime);
       await this.tokenDistribution.compensate(investor).should.be.fulfilled;
       const totalSupply = await this.token.totalSupply();
@@ -118,6 +87,47 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
 
     })
 
+  });
+
+  describe('proving without intervals', function () {
+
+    beforeEach(async function () {
+      await increaseTimeTo(this.startTime);
+    })
+
+    it('should fail because not have intervals', async function () {
+      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMThrow);
+    })
+
+  });
+
+  describe('proving intervals time', function () {
+
+    beforeEach(async function () {
+      await increaseTimeTo(this.startTime);
+    })
+
+    it('should fail because interval > endTime', async function () {
+      this.tokenDistribution.addInterval(this.endTime + duration.seconds(1), 1);
+      console.log(`end time:  ${this.endTime}`);
+      console.log(`end period interval:  ${this.endTime + duration.seconds(1)}`);
+      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMThrow);
+    })
+
+    it('should fail because interval < startTime', async function () {
+      this.tokenDistribution.addInterval(this.startTime - duration.seconds(1), 1);
+      console.log(`start time:  ${this.startTime}`);
+      console.log(`start period interval:  ${this.startTime - duration.seconds(1)}`);
+      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMThrow);
+    })
+
+    it('should fail because next interval period < previous interval period', async function () {
+      this.tokenDistribution.addInterval(this.startTime + duration.seconds(2), 1);
+      this.tokenDistribution.addInterval(this.startTime + duration.seconds(1), 1);
+      console.log(`first interval period:  ${this.startTime + duration.seconds(2)}`);
+      console.log(`second interval period:  ${this.startTime + duration.seconds(1)}`);
+      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMThrow);
+    })
 
   });
 

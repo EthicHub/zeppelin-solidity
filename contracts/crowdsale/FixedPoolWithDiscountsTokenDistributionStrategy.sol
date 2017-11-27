@@ -15,9 +15,6 @@ import '../math/SafeMath.sol';
  */
 contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStrategy {
   using SafeMath for uint256;
-  //event Log
-  event Log(uint256 message);
-  event LogString(string message);
 
   // Definition of the interval when the discount is applicable
   struct DiscountInterval {
@@ -46,23 +43,17 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
     _;
     require(discountIntervals.length > 0);
     for(uint i = 0; i < discountIntervals.length; ++i) {
-      require(discountIntervals[i].discount > 0);
-      if (i == 0) {
-        require(crowdsale.startTime() < discountIntervals[i].endPeriod);
-      } else {
+      require(discountIntervals[i].discount >= 0);
+      require(crowdsale.startTime() < discountIntervals[i].endPeriod);
+      require(discountIntervals[i].endPeriod <= crowdsale.endTime());
+      if (i != 0) {
         require(discountIntervals[i-1].endPeriod < discountIntervals[i].endPeriod);
-        require(discountIntervals[i].endPeriod <= crowdsale.endTime());
       }
     }
   }
 
   // Init intervals
   function initIntervals() validateIntervals {
-    //require (discountIntervals.length == 0);
-    //uint256 startTime = crowdsale.startTime();
-    //discountIntervals.push(DiscountInterval(startTime + 1 weeks,30));
-    //discountIntervals.push(DiscountInterval(startTime + 3 weeks,20));
-    //discountIntervals.push(DiscountInterval(startTime + 5 weeks,10));
   }
 
   function calculateTokenAmount(uint256 _weiAmount, uint256 _rate) constant returns (uint256 tokens) {
