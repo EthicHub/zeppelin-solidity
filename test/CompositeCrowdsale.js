@@ -2,6 +2,7 @@ import ether from './helpers/ether'
 import {advanceBlock} from './helpers/advanceToBlock'
 import {increaseTimeTo, duration} from './helpers/increaseTime'
 import latestTime from './helpers/latestTime'
+import EVMThrow from './helpers/EVMThrow'
 
 const BigNumber = web3.BigNumber
 
@@ -25,6 +26,17 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
     //Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
     await advanceBlock();
   })
+  describe('creating a valid crowdsale', function () {
+
+    beforeEach(async function () {
+      await increaseTimeTo(this.startTime);
+    })
+
+    it('should fail without distribution', async function () {
+      await CompositeCrowdsale.new(this.startTime, this.endTime, wallet).should.be.rejectedWith(EVMThrow);
+    })
+
+  });
 
   describe('Fixed Rate Distribution', function () {
 
@@ -41,6 +53,7 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
     beforeEach(async function () {
       await increaseTimeTo(this.startTime)
     })
+
 
     it('should accept payments and mint tokens during the sale', async function () {
       const investmentAmount = ether(1);
@@ -83,9 +96,12 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
       await this.tokenDistribution.compensate(investor).should.be.fulfilled;
       const totalSupply = await this.token.totalSupply();
       (await this.token.balanceOf(investor)).should.be.bignumber.equal(totalSupply);
+
     })
 
 
   });
+
+
 
 })

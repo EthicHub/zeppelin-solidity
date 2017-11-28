@@ -35,4 +35,6 @@ contract TokenDistributionStrategy {
   function calculateTokenAmount(uint256 weiAmount) constant returns (uint256 amount);
 
   function getToken() constant returns(ERC20);
+
+
 }
