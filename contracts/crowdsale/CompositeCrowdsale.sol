@@ -43,7 +43,7 @@ contract CompositeCrowdsale {
   event TokenPurchase(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
 
 
-  function CompositeCrowdsale(uint256 _startTime, uint256 _endTime, address _wallet, TokenDistributionStrategy _tokenDistribution) {
+  function CompositeCrowdsale(uint256 _startTime, uint256 _endTime, address _wallet, TokenDistributionStrategy _tokenDistribution) public {
     require(_startTime >= now);
     require(_endTime >= _startTime);
     require(_wallet != 0x0);
@@ -88,14 +88,14 @@ contract CompositeCrowdsale {
   }
 
   // @return true if the transaction can buy tokens
-  function validPurchase() internal constant returns (bool) {
+  function validPurchase() internal view returns (bool) {
     bool withinPeriod = now >= startTime && now <= endTime;
     bool nonZeroPurchase = msg.value != 0;
     return withinPeriod && nonZeroPurchase;
   }
 
   // @return true if crowdsale event has ended
-  function hasEnded() public constant returns (bool) {
+  function hasEnded() public view returns (bool) {
     return now > endTime;
   }
 

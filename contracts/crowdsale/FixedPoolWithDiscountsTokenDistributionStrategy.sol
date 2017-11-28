@@ -32,7 +32,7 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
   //mapping(uint256 => DiscountInterval) discountIntervals;
 
   function FixedPoolWithDiscountsTokenDistributionStrategy(ERC20 _token, uint256 _rate)
-           TokenDistributionStrategy(_rate)
+           TokenDistributionStrategy(_rate) public
   {
     token = _token;
   }
@@ -56,10 +56,10 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
   }
 
   // Init intervals
-  function initIntervals() validateIntervals {
+  function initIntervals() validateIntervals view {
   }
 
-  function calculateTokenAmount(uint256 _weiAmount) constant returns (uint256 tokens) {
+  function calculateTokenAmount(uint256 _weiAmount) view returns (uint256 tokens) {
     // calculate discount in function of the time
     for (uint i = 0; i < discountIntervals.length; i++) {
       if (now <= discountIntervals[i].endPeriod) {
@@ -85,11 +85,11 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
     }
   }
 
-  function getToken() constant returns(ERC20) {
+  function getToken() view returns(ERC20) {
     return token;
   }
 
-  function getIntervals() constant returns (uint256[] _endPeriods, uint256[] _discounts) {
+  function getIntervals() view returns (uint256[] _endPeriods, uint256[] _discounts) {
     uint256[] memory endPeriods = new uint256[](discountIntervals.length);
     uint256[] memory discounts = new uint256[](discountIntervals.length);
     for (uint256 i=0; i<discountIntervals.length; i++) {

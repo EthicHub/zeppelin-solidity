@@ -14,6 +14,6 @@ contract FixedPoolWithDiscountsTokenDistributionMock is FixedPoolWithDiscountsTo
   }
 
   //@dev this is made to fail the test because we didnt set a period
-  function initIntervals() validateIntervals {}
+  function initIntervals() validateIntervals view {}
 
 }

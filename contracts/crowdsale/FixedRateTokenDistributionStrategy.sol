@@ -28,11 +28,11 @@ contract FixedRateTokenDistributionStrategy is TokenDistributionStrategy {
     token.mint(beneficiary, amount);
   }
 
-  function getToken() constant returns(ERC20) {
+  function getToken() view returns(ERC20) {
     return token;
   }
 
-  function calculateTokenAmount(uint256 weiAmount) constant returns (uint256 amount) {
+  function calculateTokenAmount(uint256 weiAmount) view returns (uint256 amount) {
     return weiAmount.mul(rate);
   }
 

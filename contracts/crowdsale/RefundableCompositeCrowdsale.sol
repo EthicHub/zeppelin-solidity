@@ -53,7 +53,7 @@ contract RefundableCompositeCrowdsale is FinalizableCompositeCrowdsale {
     super.finalization();
   }
 
-  function goalReached() public constant returns (bool) {
+  function goalReached() public view returns (bool) {
     return weiRaised >= goal;
   }
 
