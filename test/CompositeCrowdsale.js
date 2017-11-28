@@ -18,8 +18,6 @@ const Token = artifacts.require('ERC20')
 const FixedPoolTokenDistribution = artifacts.require('FixedPoolTokenDistributionStrategy')
 const SimpleToken = artifacts.require('SimpleToken')
 
-const ConfigurableFixedPoolDiscountsDistribution = artifacts.require('./helpers/ConfigurableFixedPoolDiscountsDistribution.sol');
-
 contract('CompositeCrowdsale', function ([_, investor, wallet]) {
 
   const RATE = new BigNumber(1000);
@@ -28,6 +26,17 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
     //Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
     await advanceBlock();
   })
+  describe('creating a valid crowdsale', function () {
+
+    beforeEach(async function () {
+      await increaseTimeTo(this.startTime);
+    })
+
+    it('should fail without distribution', async function () {
+      await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet).should.be.rejectedWith(EVMThrow);
+    })
+
+  });
 
   describe('Fixed Rate Distribution', function () {
 
@@ -44,6 +53,7 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
     beforeEach(async function () {
       await increaseTimeTo(this.startTime)
     })
+
 
     it('should accept payments and mint tokens during the sale', async function () {
       const investmentAmount = ether(1);

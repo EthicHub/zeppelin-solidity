@@ -17,7 +17,7 @@ const Token = artifacts.require('ERC20')
 
 const SimpleToken = artifacts.require('SimpleToken')
 
-contract('CompositeCrowdsale', function ([_, investor, wallet]) {
+contract('FixedPoolWithDiscountsTokenDistribution', function ([_, investor, wallet]) {
 
   const RATE = new BigNumber(4000);
   const numIntervals = 3;
@@ -43,17 +43,7 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
 
   })
 
-  describe('creating a valid crowdsale', function () {
 
-    beforeEach(async function () {
-      await increaseTimeTo(this.startTime);
-    })
-
-    it('should fail with zero cap', async function () {
-      await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, 0).should.be.rejectedWith(EVMThrow);
-    })
-
-  });
 
   describe('proving the intervals of the distribution', function () {
 
