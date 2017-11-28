@@ -9,13 +9,19 @@ import '../math/SafeMath.sol';
  * @dev Base abstract contract defining methods that control token distribution
  */
 contract TokenDistributionStrategy {
+  using SafeMath for uint256;
 
   CompositeCrowdsale crowdsale;
-  using SafeMath for uint256;
+  uint256 rate;
 
   modifier onlyCrowdsale() {
     require(msg.sender == address(crowdsale));
     _;
+  }
+
+  function TokenDistributionStrategy(uint256 _rate) {
+    require(_rate > 0);
+    rate = _rate;
   }
 
   function initializeDistribution(CompositeCrowdsale _crowdsale) {
@@ -26,9 +32,9 @@ contract TokenDistributionStrategy {
 
   function distributeTokens(address beneficiary, uint amount) onlyCrowdsale {}
 
+  function calculateTokenAmount(uint256 weiAmount) constant returns (uint256 amount);
+
   function getToken() constant returns(ERC20);
 
-  //TODO rate should be a TokenDistributionStrategy parameter, not a crowdsale one
-  function calculateTokenAmount(uint weiAmount,uint rate) constant returns(uint tokens);
 
 }

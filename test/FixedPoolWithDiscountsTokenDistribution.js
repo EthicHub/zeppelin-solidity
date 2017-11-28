@@ -12,7 +12,7 @@ const should = require('chai')
   .should()
 
 const CompositeCrowdsale = artifacts.require('CompositeCrowdsale')
-const FixedPoolWithDiscountsTokenDistribution = artifacts.require('./helpers/FixedPoolWithDiscountsTokenDistributionMock');
+const FixedPoolWithDiscountsTokenDistributionMock = artifacts.require('./helpers/FixedPoolWithDiscountsTokenDistributionMock');
 const Token = artifacts.require('ERC20')
 
 const SimpleToken = artifacts.require('SimpleToken')
@@ -35,8 +35,9 @@ contract('FixedPoolWithDiscountsTokenDistribution', function ([_, investor, wall
 
     const fixedPoolToken = await SimpleToken.new();
     const totalSupply = await fixedPoolToken.totalSupply();
-    this.tokenDistribution = await FixedPoolWithDiscountsTokenDistribution.new(fixedPoolToken.address);
-    this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, RATE, wallet, this.tokenDistribution.address)
+    this.tokenDistribution = await FixedPoolWithDiscountsTokenDistributionMock.new(fixedPoolToken.address,RATE);
+
+    this.crowdsale = await CompositeCrowdsale.new(this.startTime, this.endTime, wallet, this.tokenDistribution.address)
 
     await fixedPoolToken.transfer(this.tokenDistribution.address, totalSupply);
     this.token = Token.at(await this.tokenDistribution.getToken.call());
@@ -64,7 +65,7 @@ contract('FixedPoolWithDiscountsTokenDistribution', function ([_, investor, wall
         await increaseTimeTo(this.startTime + duration.weeks(2*i))
         const investmentAmount = ether(0.000000000000000001);
         console.log("*** Amount: " + investmentAmount);
-        let tokens = await this.tokenDistribution.calculateTokenAmount(investmentAmount, RATE).should.be.fulfilled;
+        let tokens = await this.tokenDistribution.calculateTokenAmount(investmentAmount).should.be.fulfilled;
         console.log("*** COMPOSITION Tokens: " + tokens);
         let tx = await this.crowdsale.buyTokens(investor, {value: investmentAmount, from: investor}).should.be.fulfilled;
         console.log("*** COMPOSITION FIXED POOL: " + tx.receipt.gasUsed + " gas used.");

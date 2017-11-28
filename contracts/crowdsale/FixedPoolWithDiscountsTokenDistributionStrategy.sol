@@ -31,9 +31,12 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
   uint256 totalContributed;
   //mapping(uint256 => DiscountInterval) discountIntervals;
 
-  function FixedPoolWithDiscountsTokenDistributionStrategy(ERC20 _token) {
+  function FixedPoolWithDiscountsTokenDistributionStrategy(ERC20 _token, uint256 _rate)
+           TokenDistributionStrategy(_rate)
+  {
     token = _token;
   }
+
 
   // First period will go from crowdsale.start_date to discountIntervals[0].end
   // Next intervals have to end after the previous ones
@@ -56,12 +59,12 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
   function initIntervals() validateIntervals {
   }
 
-  function calculateTokenAmount(uint256 _weiAmount, uint256 _rate) constant returns (uint256 tokens) {
+  function calculateTokenAmount(uint256 _weiAmount) constant returns (uint256 tokens) {
     // calculate discount in function of the time
     for (uint i = 0; i < discountIntervals.length; i++) {
       if (now <= discountIntervals[i].endPeriod) {
         // calculate token amount to be created
-        tokens = _weiAmount.mul(_rate);
+        tokens = _weiAmount.mul(rate);
         // OP : tokens + ((tokens * discountIntervals[i].discount) / 100)
         // BE CAREFULLY with decimals
         return tokens.add(tokens.mul(discountIntervals[i].discount).div(100));
