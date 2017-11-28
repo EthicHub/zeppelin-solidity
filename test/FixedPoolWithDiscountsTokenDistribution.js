@@ -2,7 +2,7 @@ import ether from './helpers/ether'
 import {advanceBlock} from './helpers/advanceToBlock'
 import {increaseTimeTo, duration} from './helpers/increaseTime'
 import latestTime from './helpers/latestTime'
-import EVMThrow from './helpers/EVMThrow'
+import EVMRevert from './helpers/EVMRevert'
 
 const BigNumber = web3.BigNumber
 
@@ -87,7 +87,7 @@ contract('FixedPoolWithDiscountsTokenDistribution', function ([_, investor, wall
     })
 
     it('should fail because not have intervals', async function () {
-      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMThrow);
+      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMRevert);
     })
 
   });
@@ -102,14 +102,14 @@ contract('FixedPoolWithDiscountsTokenDistribution', function ([_, investor, wall
       this.tokenDistribution.addInterval(this.endTime + duration.seconds(1), 1);
       console.log(`end time:  ${this.endTime}`);
       console.log(`end period interval:  ${this.endTime + duration.seconds(1)}`);
-      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMThrow);
+      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMRevert);
     })
 
     it('should fail because interval < startTime', async function () {
       this.tokenDistribution.addInterval(this.startTime - duration.seconds(1), 1);
       console.log(`start time:  ${this.startTime}`);
       console.log(`start period interval:  ${this.startTime - duration.seconds(1)}`);
-      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMThrow);
+      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMRevert);
     })
 
     it('should fail because next interval period < previous interval period', async function () {
@@ -117,7 +117,7 @@ contract('FixedPoolWithDiscountsTokenDistribution', function ([_, investor, wall
       this.tokenDistribution.addInterval(this.startTime + duration.seconds(1), 1);
       console.log(`first interval period:  ${this.startTime + duration.seconds(2)}`);
       console.log(`second interval period:  ${this.startTime + duration.seconds(1)}`);
-      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMThrow);
+      await this.tokenDistribution.initIntervals().should.be.rejectedWith(EVMRevert);
     })
 
   });

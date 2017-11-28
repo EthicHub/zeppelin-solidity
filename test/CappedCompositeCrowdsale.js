@@ -2,7 +2,7 @@ import ether from './helpers/ether'
 import {advanceBlock} from './helpers/advanceToBlock'
 import {increaseTimeTo, duration} from './helpers/increaseTime'
 import latestTime from './helpers/latestTime'
-import EVMThrow from './helpers/EVMThrow'
+import EVMRevert from './helpers/EVMRevert'
 
 const BigNumber = web3.BigNumber
 
@@ -39,7 +39,7 @@ contract('CappedCompositeCrowdsale', function ([_, wallet]) {
   describe('creating a valid crowdsale', function () {
 
     it('should fail with zero cap', async function () {
-      await CappedCompositeCrowdsale.new(this.startTime, this.endTime, wallet, this.tokenDistribution.address, 0).should.be.rejectedWith(EVMThrow);
+      await CappedCompositeCrowdsale.new(this.startTime, this.endTime, wallet, this.tokenDistribution.address, 0).should.be.rejectedWith(EVMRevert);
     })
 
   });
@@ -57,11 +57,11 @@ contract('CappedCompositeCrowdsale', function ([_, wallet]) {
 
     it('should reject payments outside cap', async function () {
       await this.crowdsale.send(cap)
-      await this.crowdsale.send(1).should.be.rejectedWith(EVMThrow)
+      await this.crowdsale.send(1).should.be.rejectedWith(EVMRevert)
     })
 
     it('should reject payments that exceed cap', async function () {
-      await this.crowdsale.send(cap.plus(1)).should.be.rejectedWith(EVMThrow)
+      await this.crowdsale.send(cap.plus(1)).should.be.rejectedWith(EVMRevert)
     })
 
   })

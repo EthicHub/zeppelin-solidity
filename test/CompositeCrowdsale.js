@@ -2,7 +2,7 @@ import ether from './helpers/ether'
 import {advanceBlock} from './helpers/advanceToBlock'
 import {increaseTimeTo, duration} from './helpers/increaseTime'
 import latestTime from './helpers/latestTime'
-import EVMThrow from './helpers/EVMThrow'
+import EVMRevert from './helpers/EVMRevert'
 
 const BigNumber = web3.BigNumber
 
@@ -33,7 +33,7 @@ contract('CompositeCrowdsale', function ([_, investor, wallet]) {
     })
 
     it('should fail without distribution', async function () {
-      await CompositeCrowdsale.new(this.startTime, this.endTime, wallet).should.be.rejectedWith(EVMThrow);
+      await CompositeCrowdsale.new(this.startTime, this.endTime, wallet).should.be.rejectedWith(EVMRevert);
     })
 
   });
