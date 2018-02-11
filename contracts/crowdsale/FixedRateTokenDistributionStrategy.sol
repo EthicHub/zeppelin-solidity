@@ -1,8 +1,8 @@
 pragma solidity ^0.4.18;
 
-import '../token/MintableToken.sol';
+import '../token/ERC20/MintableToken.sol';
 import './TokenDistributionStrategy.sol';
-import '../token/ERC20.sol';
+import '../token/ERC20/ERC20.sol';
 
 /**
  * @title FixedRateTokenDistributionStrategy
@@ -15,24 +15,41 @@ contract FixedRateTokenDistributionStrategy is TokenDistributionStrategy {
   // The token being sold
   MintableToken token;
 
-  function FixedRateTokenDistributionStrategy(uint256 _rate) TokenDistributionStrategy(_rate){
+  function FixedRateTokenDistributionStrategy(uint256 _rate) TokenDistributionStrategy(_rate) public {
 
   }
 
-  function initializeDistribution(CompositeCrowdsale _crowdsale) {
+  /**
+  * @title initializeDistribution
+  * @dev initialize tokenDistribution by setting crowdsale contract address
+  */
+  function initializeDistribution(CompositeCrowdsale _crowdsale) public {
     super.initializeDistribution(_crowdsale);
     token = new MintableToken();
   }
 
-  function distributeTokens(address beneficiary, uint amount) onlyCrowdsale {
+  /**
+  * @title distributeTokens
+  * @dev extensive method to be used in token purchasing, distribute tokens for user according the 
+  *      conditions(discounts, bonus, etc)
+  */
+  function distributeTokens(address beneficiary, uint amount) public onlyCrowdsale {
     token.mint(beneficiary, amount);
   }
 
-  function getToken() view returns(ERC20) {
+  /**
+  * @title getToken
+  * @dev get selling token instance
+  */
+  function getToken() view public returns(ERC20) {
     return token;
   }
 
-  function calculateTokenAmount(uint256 weiAmount) view returns (uint256 amount) {
+  /**
+  * @title calculateTokenAmount
+  * @dev extensive method to be used to calculate token amount acordding to user eth purchase
+  */
+  function calculateTokenAmount(uint256 weiAmount, address beneficiary) view public returns (uint256 amount) {
     return weiAmount.mul(rate);
   }
 

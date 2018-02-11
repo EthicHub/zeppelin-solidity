@@ -59,19 +59,20 @@ contract CompositeCrowdsale {
 
 
   // fallback function can be used to buy tokens
-  function () payable {
+  function () payable public {
     buyTokens(msg.sender);
   }
 
   // low level token purchase function
-  function buyTokens(address beneficiary) payable {
+  function buyTokens(address beneficiary) payable public {
     require(beneficiary != 0x0);
     require(validPurchase());
+    require(tokenDistribution.isContributorAccepted(beneficiary));
 
     uint256 weiAmount = msg.value;
 
     // calculate token amount to be created
-    uint256 tokens = tokenDistribution.calculateTokenAmount(weiAmount);
+    uint256 tokens = tokenDistribution.calculateTokenAmount(weiAmount, beneficiary);
     // update state
     weiRaised = weiRaised.add(weiAmount);
 
@@ -95,7 +96,7 @@ contract CompositeCrowdsale {
   }
 
   // @return true if crowdsale event has ended
-  function hasEnded() public view returns (bool) {
+  function hasEnded() view public returns (bool) {
     return now > endTime;
   }
 

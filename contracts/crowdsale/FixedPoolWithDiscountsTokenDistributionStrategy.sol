@@ -2,7 +2,7 @@ pragma solidity ^0.4.18;
 
 import '../examples/SimpleToken.sol';
 import './TokenDistributionStrategy.sol';
-import '../token/ERC20.sol';
+import '../token/ERC20/ERC20.sol';
 import '../math/SafeMath.sol';
 
 /**
@@ -56,10 +56,15 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
   }
 
   // Init intervals
-  function initIntervals() validateIntervals view {
+  function initIntervals() validateIntervals public view {
   }
 
-  function calculateTokenAmount(uint256 _weiAmount) view returns (uint256 tokens) {
+  /**
+  * @title calculateTokenAmount
+  * @dev extensive method to be used to calculate token amount acordding to user eth purchase
+  * calcualte token amount according to the discount period at that moment
+  */
+  function calculateTokenAmount(uint256 _weiAmount) view public returns (uint256 tokens) {
     // calculate discount in function of the time
     for (uint i = 0; i < discountIntervals.length; i++) {
       if (now <= discountIntervals[i].endPeriod) {
@@ -72,12 +77,21 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
     }
   }
 
-  function distributeTokens(address _beneficiary, uint256 _tokenAmount) onlyCrowdsale {
+  /**
+  * @title distributeTokens
+  * @dev extensive method to be used in token purchasing, distribute tokens for user according the 
+  *      conditions(discounts, bonus, etc)
+  */
+  function distributeTokens(address _beneficiary, uint256 _tokenAmount) public onlyCrowdsale {
     contributions[_beneficiary] = contributions[_beneficiary].add(_tokenAmount);
     totalContributed = totalContributed.add(_tokenAmount);
   }
 
-  function compensate(address _beneficiary) {
+  /**
+  * @title compensate
+  * @dev send token to user
+  */
+  function compensate(address _beneficiary) public {
     require(crowdsale.hasEnded());
     uint256 amount = contributions[_beneficiary].mul(token.totalSupply()).div(totalContributed);
     if (token.transfer(_beneficiary, amount)) {
@@ -85,11 +99,19 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
     }
   }
 
-  function getToken() view returns(ERC20) {
+  /**
+  * @title getToken
+  * @dev get selling token instance
+  */
+  function getToken() view public returns(ERC20) {
     return token;
   }
 
-  function getIntervals() view returns (uint256[] _endPeriods, uint256[] _discounts) {
+  /**
+  * @title getIntervals
+  * @dev get discount intervals
+  */
+  function getIntervals() view public returns (uint256[] _endPeriods, uint256[] _discounts) {
     uint256[] memory endPeriods = new uint256[](discountIntervals.length);
     uint256[] memory discounts = new uint256[](discountIntervals.length);
     for (uint256 i=0; i<discountIntervals.length; i++) {
@@ -98,5 +120,4 @@ contract FixedPoolWithDiscountsTokenDistributionStrategy is TokenDistributionStr
     }
     return (endPeriods, discounts);
   }
-
 }

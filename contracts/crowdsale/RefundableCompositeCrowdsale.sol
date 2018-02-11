@@ -21,7 +21,7 @@ contract RefundableCompositeCrowdsale is FinalizableCompositeCrowdsale {
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;
 
-  function RefundableCompositeCrowdsale(uint256 _goal) {
+  function RefundableCompositeCrowdsale(uint256 _goal) public {
     require(_goal > 0);
     vault = new RefundVault(wallet);
     goal = _goal;

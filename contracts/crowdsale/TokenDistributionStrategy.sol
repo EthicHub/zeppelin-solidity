@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import '../token/ERC20.sol';
+import '../token/ERC20/ERC20.sol';
 import './CompositeCrowdsale.sol';
 import '../math/SafeMath.sol';
 
@@ -19,22 +19,45 @@ contract TokenDistributionStrategy {
     _;
   }
 
-  function TokenDistributionStrategy(uint256 _rate) {
+  function TokenDistributionStrategy(uint256 _rate) public {
     require(_rate > 0);
     rate = _rate;
   }
 
-  function initializeDistribution(CompositeCrowdsale _crowdsale) {
+  /**
+  * @title initializeDistribution
+  * @dev initialize tokenDistribution by setting crowdsale contract address
+  */
+  function initializeDistribution(CompositeCrowdsale _crowdsale) public {
     require(crowdsale == address(0));
     require(_crowdsale != address(0));
     crowdsale = _crowdsale;
   }
 
-  function distributeTokens(address beneficiary, uint amount) onlyCrowdsale {}
+  /**
+  * @title isContributorAccepted
+  * @dev extensive method to be used before purchasing, for example whitelisted crowdsale
+  */
+  function isContributorAccepted(address beneficiary) view public returns (bool accepted){
+    return true;
+  }
 
-  function calculateTokenAmount(uint256 weiAmount) view returns (uint256 amount);
+  /**
+  * @title distributeTokens
+  * @dev extensive method to be used in token purchasing, distribute tokens for user according the 
+  *      conditions(discounts, bonus, etc)
+  */
+  function distributeTokens(address beneficiary, uint amount) public onlyCrowdsale {}
 
-  function getToken() view returns(ERC20);
+  /**
+  * @title calculateTokenAmount
+  * @dev extensive method to be used to calculate token amount acordding to user eth purchase
+  */
+  function calculateTokenAmount(uint256 weiAmount, address beneficiary) view public returns (uint256 amount);
 
-
+  /**
+  * @title getToken
+  * @dev get selling token instance
+  */
+  function getToken() view public returns(ERC20);
 }
